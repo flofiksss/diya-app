@@ -1,4 +1,3 @@
-// Простая SHA-256 (асинхронная)
 async function sha256(str) {
   const buffer = new TextEncoder().encode(str);
   const hash = await crypto.subtle.digest('SHA-256', buffer);
@@ -9,7 +8,6 @@ let pinSet = false;
 let data = loadData();
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Splash
   setTimeout(() => {
     document.getElementById('splash').style.opacity = '0';
     setTimeout(() => {
@@ -18,7 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 500);
   }, 1000);
 
-  // Кнопки
   document.getElementById('submitPin').addEventListener('click', handlePin);
   document.getElementById('openSettings').addEventListener('click', () => {
     document.getElementById('settingsModal').style.display = 'block';
@@ -31,14 +28,12 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('logoutBtn').addEventListener('click', logout);
 
-  // Закрытие модалок по крестику
   document.querySelectorAll('.close-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.target.closest('.modal').style.display = 'none';
     });
   });
 
-  // Превью фото
   document.getElementById('photoInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (file) {
@@ -74,7 +69,6 @@ async function handlePin() {
   if (!pin || pin.length !== 4) return;
 
   if (!pinSet) {
-    // Первый вход – сохраняем PIN
     const hash = await sha256(pin);
     localStorage.setItem('pinHash', hash);
     pinSet = true;
@@ -109,7 +103,6 @@ function logout() {
   document.getElementById('settingsModal').style.display = 'none';
 }
 
-// Работа с документами (localStorage)
 function loadData() {
   const raw = localStorage.getItem('diyaDocs');
   return raw ? JSON.parse(raw) : {};
@@ -154,7 +147,6 @@ function renderDocs() {
       <div class="card-icon">🚗</div>
     </div>`;
 
-  // Просмотр документа с QR
   document.getElementById('passportCard').onclick = () => viewDoc('ID-картка');
   document.getElementById('taxCard').onclick = () => viewDoc('РНОКПП');
   document.getElementById('driverLicenseCard').onclick = () => viewDoc('Посвідчення водія');
@@ -178,7 +170,7 @@ function viewDoc(type) {
       <span class="close-btn">&times;</span>
       <h2>${type}</h2>
       <div style="margin:16px 0;">
-        <img src="${d.photo || 'icons/icon-192.png'}" style="width:120px;height:160px;object-fit:cover;border-radius:10px;" alt="Фото">
+        <img src="${d.photo || 'icon-192.png'}" style="width:120px;height:160px;object-fit:cover;border-radius:10px;" alt="Фото">
       </div>
       <p><strong>ПІБ:</strong> ${d.fullName || '—'}</p>
       <p><strong>Дата народження:</strong> ${d.birthDate ? formatDate(d.birthDate) : '—'}</p>
