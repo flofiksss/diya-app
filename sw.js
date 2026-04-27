@@ -1,11 +1,11 @@
 const CACHE = 'diya-v1';
 const FILES = [
-  '/',
-  '/index.html',
-  '/css/style.css',
-  '/js/app.js',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png'
+  '/diya-app/',
+  '/diya-app/index.html',
+  '/diya-app/style.css',
+  '/diya-app/app.js',
+  '/diya-app/icon-192.png',
+  '/diya-app/icon-512.png'
 ];
 
 self.addEventListener('install', e => {
