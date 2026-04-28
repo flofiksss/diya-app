@@ -9,8 +9,12 @@ let pinSet = false;
 let data = loadData();
 let reserveData = loadReserveData();
 
+// Функція, що приховує ВСІ модальні вікна
+function hideAllModals() {
+  document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-  // Splash
   setTimeout(() => {
     document.getElementById('splash').style.opacity = '0';
     setTimeout(() => {
@@ -19,64 +23,48 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 500);
   }, 1000);
 
-  // Кнопки PIN
   document.getElementById('submitPin').addEventListener('click', handlePin);
-  // Открытие настроек
   document.getElementById('openSettings').addEventListener('click', () => {
+    hideAllModals();
     document.getElementById('settingsModal').style.display = 'block';
   });
-  // Закрытие настроек
-  document.getElementById('closeSettings').addEventListener('click', () => {
-    document.getElementById('settingsModal').style.display = 'none';
+  document.getElementById('editDocsBtn').addEventListener('click', () => {
+    hideAllModals();
+    openEditor();
   });
-  // Редактировать документы
-  document.getElementById('editDocsBtn').addEventListener('click', openEditor);
-  // Сохранить документы
   document.getElementById('saveDocsBtn').addEventListener('click', saveDocs);
-  // Закрыть редактор
-  document.getElementById('closeEditor').addEventListener('click', () => {
-    document.getElementById('editorModal').style.display = 'none';
-  });
-  // Сменить PIN
   document.getElementById('changePinBtn').addEventListener('click', () => {
-    document.getElementById('settingsModal').style.display = 'none';
+    hideAllModals();
     resetPin();
   });
-  // Выйти
   document.getElementById('logoutBtn').addEventListener('click', () => {
+    hideAllModals();
     logout();
-    document.getElementById('settingsModal').style.display = 'none';
   });
 
-  // Закрытие детального просмотра документа
-  document.getElementById('closeDocView').addEventListener('click', () => {
-    document.getElementById('docViewModal').style.display = 'none';
+  // Закриття модалок через хрестик
+  document.querySelectorAll('.close-btn').forEach(btn => {
+    btn.addEventListener('click', () => hideAllModals());
   });
 
-  // Открытие Резерв+
-  document.getElementById('reservePlus').addEventListener('click', openReserve);
-  // Закрытие Резерв+
-  document.getElementById('closeReserve').addEventListener('click', () => {
-    document.getElementById('reserveModal').style.display = 'none';
+  document.getElementById('reservePlus').addEventListener('click', () => {
+    hideAllModals();
+    openReserve();
   });
-  // Сохранить Резерв+
   document.getElementById('saveReserveBtn').addEventListener('click', saveReserve);
-  // Удалить Резерв+
   document.getElementById('deleteReserveBtn').addEventListener('click', () => {
     localStorage.removeItem('reserveData');
     reserveData = {};
-    document.getElementById('reserveModal').style.display = 'none';
+    hideAllModals();
     alert('Дані Резерв+ видалено');
   });
 
-  // Остальные сервисы — просто заглушки
   document.getElementById('qrScanner').addEventListener('click', () => alert('Функція сканування QR-коду'));
   document.getElementById('eVorog').addEventListener('click', () => alert('Чат-бот єВорог запущено'));
   document.getElementById('unbreakablePoints').addEventListener('click', () => alert('Мапа Пунктів Незламності'));
   document.getElementById('warBonds').addEventListener('click', () => alert('Військові облігації'));
   document.getElementById('paidTaxes').addEventListener('click', () => alert('Сплачені податки'));
 
-  // Превью фото
   document.getElementById('photoInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (file) {
@@ -89,7 +77,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-/* ========== PIN-код ========== */
 async function checkPin() {
   const storedHash = localStorage.getItem('pinHash');
   const pinScreen = document.getElementById('pinScreen');
@@ -140,13 +127,13 @@ function resetPin() {
   document.getElementById('pinScreen').style.display = 'flex';
   document.getElementById('newPinHint').style.display = 'block';
   document.getElementById('pinInput').value = '';
+  hideAllModals();
 }
 
 function logout() {
   resetPin();
 }
 
-/* ========== Данные ========== */
 function loadData() {
   const raw = localStorage.getItem('diyaDocs');
   return raw ? JSON.parse(raw) : {};
@@ -165,24 +152,20 @@ function saveReserveDataToStorage() {
   localStorage.setItem('reserveData', JSON.stringify(reserveData));
 }
 
-/* ========== Рендер главного экрана ========== */
 function renderAll() {
   data = loadData();
   reserveData = loadReserveData();
 
-  // Приветствие
   const name = data.fullName || 'Користувач';
   document.getElementById('greetingName').textContent = `Привіт, ${name}`;
-  // Уведомление (имитация)
   document.getElementById('notification').style.display = 'flex';
   document.getElementById('notifText').textContent = 'Вам надійшов запит на підписання договору';
 
-  // Документы
   const docsScroll = document.getElementById('documentsScroll');
   const birth = data.birthDate ? formatDate(data.birthDate) : '';
   const passport = data.passportNumber || 'XX000000';
   const id = data.idNumber || '000000000';
-  const driver = data.driverNumber || 'ABC123456';
+  const driver = data.driverNumber || '';
   const tax = data.taxNumber || '0000000000';
 
   docsScroll.innerHTML = `
@@ -200,7 +183,7 @@ function renderAll() {
       <div class="doc-card-details">${birth ? birth + ' • ' : ''}${id}</div>
       <div class="doc-card-valid">Документ дійсний</div>
     </div>
-    ${data.driverNumber ? `
+    ${driver ? `
     <div class="document-card" data-doc="driver">
       <div class="doc-card-icon">🚗</div>
       <div class="doc-card-type">Посвідчення водія</div>
@@ -217,11 +200,10 @@ function renderAll() {
     </div>
   `;
 
-  // Клики по документам
   document.querySelectorAll('.document-card').forEach(card => {
     card.addEventListener('click', function() {
-      const docType = this.dataset.doc;
-      viewDocument(docType);
+      hideAllModals();
+      viewDocument(this.dataset.doc);
     });
   });
 }
@@ -232,12 +214,11 @@ function formatDate(dateStr) {
   return `${d}.${m}.${y}`;
 }
 
-/* ========== Открытие документа детально ========== */
 function viewDocument(type) {
   data = loadData();
   const name = data.fullName || 'Користувач';
   const birth = data.birthDate ? formatDate(data.birthDate) : '';
-  let title, number, extra = '';
+  let title, number;
   switch (type) {
     case 'passport':
       title = 'Паспорт громадянина України';
@@ -268,15 +249,12 @@ function viewDocument(type) {
   document.getElementById('docViewName').innerHTML = `<strong>ПІБ:</strong> ${name}`;
   document.getElementById('docViewBirth').innerHTML = `<strong>Дата народження:</strong> ${birth || '—'}`;
   document.getElementById('docViewNumber').innerHTML = `<strong>Номер:</strong> ${number}`;
-  document.getElementById('docViewExtra').style.display = 'none';
   document.getElementById('docViewQR').src = qrURL;
 
   document.getElementById('docViewModal').style.display = 'block';
 }
 
-/* ========== Редактирование документов ========== */
 function openEditor() {
-  document.getElementById('settingsModal').style.display = 'none';
   const d = loadData();
   document.getElementById('fullNameInput').value = d.fullName || '';
   document.getElementById('birthDateInput').value = d.birthDate || '';
@@ -311,11 +289,10 @@ function saveDocs() {
 
   data = { fullName, birthDate, passportNumber, idNumber, taxNumber, driverNumber, photo };
   saveData();
-  document.getElementById('editorModal').style.display = 'none';
+  hideAllModals();
   renderAll();
 }
 
-/* ========== Резерв+ ========== */
 function openReserve() {
   reserveData = loadReserveData();
   document.getElementById('reserveName').value = reserveData.name || data.fullName || '';
@@ -333,6 +310,6 @@ function saveReserve() {
     spec: document.getElementById('reserveSpec').value
   };
   saveReserveDataToStorage();
-  document.getElementById('reserveModal').style.display = 'none';
+  hideAllModals();
   alert('Дані Резерв+ збережено');
 }
